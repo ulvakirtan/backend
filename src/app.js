@@ -6,6 +6,7 @@ import RegistrationPage from './component/RegistrationPage';
 import StudentDashboard from './component/StudentDashboard';
 import ProfessorDashboard from './component/ProfessorDashboard';
 import SecurityDashboard from './component/SecurityDashboard';
+
 export default function App() {
   const [page, setPage] = useState('home');
   const [role, setRole] = useState(null);
