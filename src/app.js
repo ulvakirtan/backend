@@ -1,33 +1,73 @@
-const express = require('express');
-const connectDB = require('./config/db');
-const morgan = require('morgan');
-const cors = require('cors');
+import React, { useState } from 'react';
+import './App.css';
+import HomePage from './component/HomePage';
+import LoginPage from './component/LoginPage';
+import RegistrationPage from './component/RegistrationPage';
+import StudentDashboard from './component/StudentDashboard';
+import ProfessorDashboard from './component/ProfessorDashboard';
+import SecurityDashboard from './component/SecurityDashboard';
+export default function App() {
+  const [page, setPage] = useState('home');
+  const [role, setRole] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState(null);
 
-const app = express();
+  const handleSelectRole = (userRole) => {
+    setRole(userRole);
+    setPage('login');
+  };
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(morgan('dev'));
+  const handleGoToRegister = () => setPage('register');
+  const handleGoToLogin = () => setPage('login');
 
-// Connect to MongoDB
-connectDB();
+  const onLoginSuccess = (user) => {
+    setLoggedInUser(user);
+    setPage(role);
+  };
 
-// Test route
-app.get('/', (req, res) => {
-  res.json({ msg: 'Campus Safety Alert System API' });
-});
+  const onRegisterSuccess = (user) => {
+    setLoggedInUser(user);
+    setPage(role);
+  };
 
-// API routes
-app.use('/api/register', require('./routes/register'));
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/students', require('./routes/student'));
-app.use('/api/complaints', require('./routes/complaints'));
-app.use('/api/qr', require('./routes/qr'));
-app.use('/api/images', require('./routes/image'));
-app.use('/api/face', require('./routes/face'));
-app.use('/api/alerts', require('./routes/alerts'));
+  const handleLogout = () => {
+    setRole(null);
+    setLoggedInUser(null);
+    setPage('home');
+  };
 
-module.exports = app;
+  const renderPage = () => {
+    switch (page) {
+      case 'login':
+        return (
+          <LoginPage
+            onLoginSuccess={onLoginSuccess}
+            role={role}
+            onGoToRegister={handleGoToRegister}
+          />
+        );
+      case 'register':
+        return (
+          <RegistrationPage
+            onRegisterSuccess={onRegisterSuccess}
+            role={role}
+            onGoToLogin={handleGoToLogin}
+          />
+        );
+      case 'student':
+        return <StudentDashboard user={loggedInUser} onLogout={handleLogout} />;
+      case 'professor':
+        return <ProfessorDashboard user={loggedInUser} onLogout={handleLogout} />;
+      case 'security':
+        return <SecurityDashboard user={loggedInUser} onLogout={handleLogout} />;
+      case 'home':
+      default:
+        return <HomePage onRoleSelect={handleSelectRole} />;
+    }
+  };
 
+  return (
+    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen font-sans">
+      {renderPage()}
+    </div>
+  );
+}
